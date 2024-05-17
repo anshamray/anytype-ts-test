@@ -1,22 +1,8 @@
-/**
- * Example Playwright script for Electron
- * showing/testing various API features
- * in both renderer and main processes
- */
 import { test } from "@playwright/test";
 import { expect } from "@playwright/test";
-import * as fs from "fs";
-import * as path from "path";
 import {
 	clickMenuItemById,
-	findLatestBuild,
-	ipcMainCallFirstListener,
-	ipcRendererCallFirstListener,
 	parseElectronApp,
-	ipcMainInvokeHandler,
-	ipcRendererInvoke,
-	getApplicationMenu,
-	clickMenuItem,
 } from "electron-playwright-helpers";
 import jimp from "jimp";
 import { ElectronApplication, Page, _electron as electron } from "playwright";
@@ -34,9 +20,10 @@ async function logOut(page, electronApp) {
 
 test.beforeAll(async () => {
 	// parse the directory and find paths and other info
-	const appInfo = parseElectronApp(
-		"/home/shamray/workspace/anytype/anytype-ts/dist/linux-unpacked"
-	);
+	const electronAppPath =
+		process.env.ELECTRON_APP_PATH ||
+		"/home/shamray/workspace/anytype/anytype-ts/dist/linux-unpacked";
+	const appInfo = parseElectronApp(electronAppPath);
 	// set the CI environment variable to true
 	process.env.CI = "e2e";
 	electronApp = await electron.launch({
