@@ -54,7 +54,7 @@ class MenuManager {
 				role: 'fileMenu', label: Util.translate('electronMenuFile'),
 				submenu: [
 					{ label: Util.translate('commonNewObject'), accelerator: 'CmdOrCtrl+N', click: () => Util.send(this.win, 'commandGlobal', 'createObject') },
-					{ label: Util.translate('commonNewSpace'), click: () => Util.send(this.win, 'commandGlobal', 'createSpace') },
+					{ label: Util.translate('commonNewSpace'), id: 'newSpace', click: () => Util.send(this.win, 'commandGlobal', 'createSpace') },
 
 					Separator,
 
@@ -383,7 +383,7 @@ class MenuManager {
 				}
 			},
 			{ 
-				label: Util.translate('electronMenuAccountSettings'), click: () => { 
+				label: Util.translate('electronMenuAccountSettings'), id: 'vault', click: () => { 
 					this.winShow(); 
 					this.openSettings(''); 
 				}
