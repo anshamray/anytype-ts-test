@@ -4,19 +4,16 @@ import {
 	clickMenuItemById,
 	parseElectronApp,
 } from "electron-playwright-helpers";
-import jimp from "jimp";
 import { ElectronApplication, Page, _electron as electron } from "playwright";
 
 let electronApp: ElectronApplication;
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const storage = {};
-
-async function logOut(page, electronApp) {
-	await clickMenuItemById(electronApp, "vault");
-	await page.click('div.label[data-content="Log out"]');
-	await page.locator("#sideRight").getByText("Log out").click();
+function reverseString(str) {
+	return str.split("").reverse().join("");
 }
+
+const storage = {};
 
 test.beforeAll(async () => {
 	// parse the directory and find paths and other info
@@ -46,9 +43,7 @@ test.beforeAll(async () => {
 	});
 });
 
-test.afterAll(() => {
-	//
-});
+test.afterAll(() => {});
 
 let page: Page;
 
@@ -73,20 +68,23 @@ test("Enter my Vault", async () => {
 	// Save the copied text to storage
 	storage["vaultKey"] = copiedText;
 	console.log("Copied text:", storage["vaultKey"]);
+	page.getByText("Key has been copied to");
 	await delay(3000);
 	await page.getByText("Next").click();
 	//Step choose the name and enter the vault
 	await page.getByPlaceholder("Untitled").fill("Friedolin");
 	await page.getByText("Enter my Vault").click();
-	await delay(3000);
+	page.getByText("Welcome to your Space");
 });
 
 test("Log out", async () => {
-	logOut(page, electronApp);
+	await clickMenuItemById(electronApp, "vault");
+	await page.click('div.label[data-content="Log out"]');
+	await page.locator("#sideRight").getByText("Log out").click();
 });
 
 test("Log in as existing user", async () => {
-	await delay(3000);
+	await delay(2000);
 	await page.getByText("I have a Key").click();
 	await page.locator(".phraseInnerWrapper").click();
 	await page.locator("#entry").type(storage["vaultKey"]);
@@ -96,12 +94,25 @@ test("Log in as existing user", async () => {
 });
 
 test("Create new Personal Project space", async () => {
-	await delay(3000);
+	await delay(2000);
 	await clickMenuItemById(electronApp, "newSpace");
 	await page.locator("#select-select-usecase").click();
 	await page.getByText("Personal projects", { exact: true }).click();
 	await page.getByText("Create", { exact: true }).click();
-	await delay(3000);
-	const title = await page.title();
-	expect(title).toMatch(/.*Personal projects.*/);
+	await expect(page).toHaveTitle(/.*Personal projects.*/);
+	await delay(2000);
+	await clickMenuItemById(electronApp, "vault");
+	await page.click('div.label[data-content="Log out"]');
+	await page.locator("#sideRight").getByText("Log out").click();
+});
+
+test("Try to log in with non-existing key", async () => {
+	await delay(2000);
+	await page.getByText("I have a Key").click();
+	await page.locator(".phraseInnerWrapper").click();
+	await page.locator("#entry").type(reverseString(storage["vaultKey"]));
+	await page.keyboard.press("Space");
+	await page.getByText("Enter my Vault").click();
+	const errorElement = page.locator("div.error.animation");
+	await expect(errorElement).toHaveText("Invalid Key");
 });
