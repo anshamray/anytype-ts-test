@@ -47,7 +47,7 @@ test.afterAll(() => {});
 
 let page: Page;
 
-test("renders the first page", async () => {
+test("Renders the first page", async () => {
 	page = await electronApp.firstWindow();
 	const title = await page.title();
 	expect(title).toBe("Anytype");
@@ -55,10 +55,10 @@ test("renders the first page", async () => {
 
 test("Enter my Vault", async () => {
 	//Step create new vault
-	await page.getByText("New Vault").click();
+	await page.getByText("AuthSelectSignup").click();
 	//Step get my key
-	await page.getByText("Get my Key").click();
-	await page.getByText("Show my Key").click();
+	await page.getByText("AuthOnboardVaultButton").click();
+	await page.getByText("AuthOnboardPhraseSubmit").click();
 	//Step save the key
 	await page.click(".icon.copy");
 	// Retrieve clipboard content
@@ -68,28 +68,29 @@ test("Enter my Vault", async () => {
 	// Save the copied text to storage
 	storage["vaultKey"] = copiedText;
 	console.log("Copied text:", storage["vaultKey"]);
-	page.getByText("Key has been copied to");
+	page.getByText("toast copy");
 	await delay(3000);
-	await page.getByText("Next").click();
+	await page.getByText("commonNext").click();
 	//Step choose the name and enter the vault
-	await page.getByPlaceholder("Untitled").fill("Friedolin");
-	await page.getByText("Enter my Vault").click();
-	page.getByText("Welcome to your Space");
+	await page.getByPlaceholder("defaultNamePage").fill("Friedolin");
+	await page.getByText("authOnboardSoulButton").click();
+	page.getByText("popipConfirmWelcomeButton");
 });
 
 test("Log out", async () => {
+	await delay(2000);
 	await clickMenuItemById(electronApp, "vault");
-	await page.click('div.label[data-content="Log out"]');
-	await page.locator("#sideRight").getByText("Log out").click();
+	await page.click('div.label[data-content="popupSettingsLogout"]');
+	await page.locator("#sideRight").getByText("popupSettingsLogout").click();
 });
 
 test("Log in as existing user", async () => {
 	await delay(2000);
-	await page.getByText("I have a Key").click();
+	await page.getByText("authSelectLogin").click();
 	await page.locator(".phraseInnerWrapper").click();
 	await page.locator("#entry").type(storage["vaultKey"]);
 	await page.keyboard.press("Space");
-	await page.getByText("Enter my Vault").click();
+	await page.getByText("authLoginSubmit").click();
 	page.locator("#path").getByText("Homepage");
 });
 
@@ -97,22 +98,22 @@ test("Create new Personal Project space", async () => {
 	await delay(2000);
 	await clickMenuItemById(electronApp, "newSpace");
 	await page.locator("#select-select-usecase").click();
-	await page.getByText("Personal projects", { exact: true }).click();
-	await page.getByText("Create", { exact: true }).click();
-	await expect(page).toHaveTitle(/.*Personal projects.*/);
+	await page.getByText("usecase2Title", { exact: true }).click();
+	await page.getByText("commonCreate", { exact: true }).click();
+	await expect(page).toHaveTitle(/.*usecase2Title*/);
 	await delay(2000);
 	await clickMenuItemById(electronApp, "vault");
-	await page.click('div.label[data-content="Log out"]');
-	await page.locator("#sideRight").getByText("Log out").click();
+	await page.click('div.label[data-content="popupSettingsLogout"]');
+	await page.locator("#sideRight").getByText("popupSettingsLogout").click();
 });
 
 test("Try to log in with non-existing key", async () => {
 	await delay(2000);
-	await page.getByText("I have a Key").click();
+	await page.getByText("authSelectLogin").click();
 	await page.locator(".phraseInnerWrapper").click();
 	await page.locator("#entry").type(reverseString(storage["vaultKey"]));
 	await page.keyboard.press("Space");
-	await page.getByText("Enter my Vault").click();
+	await page.getByText("authLoginSubmit").click();
 	const errorElement = page.locator("div.error.animation");
-	await expect(errorElement).toHaveText("Invalid Key");
+	await expect(errorElement).toHaveText("pageAuthLoginInvalidPhrase");
 });
